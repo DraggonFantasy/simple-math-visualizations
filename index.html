@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Візуалізація додавання дробів</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #333;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 900px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #4a5568;
+            margin-bottom: 30px;
+            font-size: 2.2rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .input-section {
+            background: rgba(74, 85, 104, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .fraction-inputs {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .fraction-input {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .fraction-input input {
+            width: 60px;
+            height: 40px;
+            text-align: center;
+            font-size: 1.2rem;
+            border: 2px solid #cbd5e0;
+            border-radius: 8px;
+            margin: 2px 0;
+            background: white;
+        }
+
+        .fraction-input .line {
+            width: 60px;
+            height: 2px;
+            background: #4a5568;
+            margin: 2px 0;
+        }
+
+        .operator {
+            font-size: 2rem;
+            color: #4a5568;
+            font-weight: bold;
+        }
+
+        .equation {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #2d3748;
+            font-weight: bold;
+        }
+
+        .chocolates-container {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 40px 0;
+            flex-wrap: wrap;
+        }
+
+        .chocolate-wrapper {
+            text-align: center;
+        }
+
+        .chocolate {
+            width: 200px;
+            height: 150px;
+            background: #8B4513;
+            border: 4px solid #654321;
+            border-radius: 10px;
+            position: relative;
+            margin: 10px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .chocolate-piece {
+            position: absolute;
+            background: #8B4513;
+            border: 1px solid #654321;
+            transition: all 1s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chocolate-piece.highlighted {
+            background: #FFD700;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                box-shadow: 0 0 5px #FFD700;
+            }
+            to {
+                box-shadow: 0 0 20px #FFD700, 0 0 30px #FFD700;
+            }
+        }
+
+        .fraction-label {
+            font-size: 1.5rem;
+            margin-top: 10px;
+            font-weight: bold;
+            color: #2d3748;
+        }
+
+        .step-info {
+            min-height: 140px;
+            background: rgba(74, 85, 104, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-size: 1.2rem;
+            color: #4a5568;
+            border-left: 5px solid #667eea;
+        }
+
+        .controls {
+            margin-top: 30px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn.update {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        }
+
+        .counting-number {
+            position: absolute;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #e53e3e;
+            animation: countPop 0.5s ease-out;
+            z-index: 10;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            border: 2px solid #e53e3e;
+        }
+
+        @keyframes countPop {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.3);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .result {
+            font-size: 2.5rem;
+            color: #38a169;
+            font-weight: bold;
+            margin-top: 30px;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .result.show {
+            opacity: 1;
+        }
+
+        .plus-sign {
+            font-size: 3rem;
+            color: #4a5568;
+            align-self: center;
+            font-weight: bold;
+        }
+
+        .error {
+            color: #e53e3e;
+            font-size: 1rem;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .chocolates-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .plus-sign {
+                transform: rotate(90deg);
+                margin: 20px 0;
+            }
+            
+            .fraction-inputs {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Додавання дробів за допомогою шоколадок</h1>
+        
+        <div class="input-section">
+            <div class="fraction-inputs">
+                <div class="fraction-input">
+                    <input type="number" id="num1" value="1" min="1" max="20">
+                    <div class="line"></div>
+                    <input type="number" id="den1" value="3" min="1" max="20">
+                </div>
+                
+                <div class="operator">+</div>
+                
+                <div class="fraction-input">
+                    <input type="number" id="num2" value="1" min="1" max="20">
+                    <div class="line"></div>
+                    <input type="number" id="den2" value="4" min="1" max="20">
+                </div>
+                
+                <div class="operator">=</div>
+                
+                <div class="operator">?</div>
+            </div>
+            <button class="btn update" onclick="updateFractions()">🔄 Оновити анімацію</button>
+            <div class="error" id="error"></div>
+        </div>
+
+        <div class="equation" id="equation">1/3 + 1/4 = ?</div>
+        
+        <div class="chocolates-container">
+            <div class="chocolate-wrapper">
+                <div class="chocolate" id="chocolate1"></div>
+                <div class="fraction-label" id="fraction1">1/3</div>
+            </div>
+            
+            <div class="plus-sign">+</div>
+            
+            <div class="chocolate-wrapper">
+                <div class="chocolate" id="chocolate2"></div>
+                <div class="fraction-label" id="fraction2">1/4</div>
+            </div>
+        </div>
+
+        <div class="step-info" id="stepInfo">
+            Введіть дроби вище і натисніть "Оновити анімацію", потім використовуйте кнопки для покрокового перегляду.
+        </div>
+
+        <div class="controls">
+            <button class="btn" id="prevBtn" onclick="previousStep()" disabled>← Попередній крок</button>
+            <button class="btn" id="nextBtn" onclick="nextStep()" disabled>Наступний крок →</button>
+            <button class="btn" onclick="resetAnimation()">🔄 Спочатку</button>
+        </div>
+
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        let currentStep = 0;
+        const maxSteps = 4;
+        let fractionData = null;
+        let countingTimeouts = []; // Массив для хранения таймеров
+        
+        // Математические функции
+        function gcd(a, b) {
+            while (b !== 0) {
+                let temp = b;
+                b = a % b;
+                a = temp;
+            }
+            return a;
+        }
+
+        function lcm(a, b) {
+            return Math.abs(a * b) / gcd(a, b);
+        }
+
+        function reduceFraction(num, den) {
+            const g = gcd(num, den);
+            return [num / g, den / g];
+        }
+
+        function validateInputs() {
+            const num1 = parseInt(document.getElementById('num1').value);
+            const den1 = parseInt(document.getElementById('den1').value);
+            const num2 = parseInt(document.getElementById('num2').value);
+            const den2 = parseInt(document.getElementById('den2').value);
+            
+            if (isNaN(num1) || isNaN(den1) || isNaN(num2) || isNaN(den2)) {
+                return "Усі поля повинні бути заповнені числами";
+            }
+            
+            if (num1 < 1 || den1 < 1 || num2 < 1 || den2 < 1) {
+                return "Усі числа повинні бути більше 0";
+            }
+            
+            if (num1 > 20 || den1 > 20 || num2 > 20 || den2 > 20) {
+                return "Числа не повинні бути більше 20 (для кращої візуалізації)";
+            }
+            
+            if (num1 >= den1 || num2 >= den2) {
+                return "Чисельники повинні бути менше знаменників (тільки правильні дроби)";
+            }
+            
+            return null;
+        }
+
+        function updateFractions() {
+            const error = validateInputs();
+            const errorElement = document.getElementById('error');
+            
+            if (error) {
+                errorElement.textContent = error;
+                return;
+            }
+            
+            errorElement.textContent = '';
+            
+            const num1 = parseInt(document.getElementById('num1').value);
+            const den1 = parseInt(document.getElementById('den1').value);
+            const num2 = parseInt(document.getElementById('num2').value);
+            const den2 = parseInt(document.getElementById('den2').value);
+            
+            // Используем произведение знаменателей для более очевидной анимации
+            const commonDenom = den1 * den2;
+            const newNum1 = num1 * den2;  // num1 * (commonDenom / den1)
+            const newNum2 = num2 * den1;  // num2 * (commonDenom / den2)
+            const resultNum = newNum1 + newNum2;
+            
+            // Оставляем результат несокращенным для наглядности
+            const [reducedNum, reducedDen] = reduceFraction(resultNum, commonDenom);
+            
+            fractionData = {
+                original: {
+                    num1, den1, num2, den2
+                },
+                common: {
+                    num1: newNum1,
+                    num2: newNum2,
+                    den: commonDenom
+                },
+                result: {
+                    num: resultNum,        // несокращенный числитель
+                    den: commonDenom,      // общий знаменатель
+                    reducedNum,            // сокращенный числитель
+                    reducedDen             // сокращенный знаменатель
+                }
+            };
+            
+            document.getElementById('equation').textContent = 
+                `${num1}/${den1} + ${num2}/${den2} = ?`;
+            
+            // Показываем несокращенную дробь как основной результат
+            document.getElementById('result').textContent = 
+                `${resultNum}/${commonDenom}`;
+            
+            currentStep = 0;
+            resetAnimation();
+            document.getElementById('nextBtn').disabled = false;
+        }
+
+        function getHighlightedPieces(rows, cols, numerator, denominator, isVertical) {
+            const totalPieces = rows * cols;
+            const piecesPerUnit = totalPieces / denominator;
+            const highlightedCount = numerator * piecesPerUnit;
+            
+            const highlighted = [];
+            
+            if (isVertical) {
+                // Выделяем вертикальные полосы (колонки)
+                const colsToHighlight = numerator;
+                for (let col = 0; col < colsToHighlight; col++) {
+                    for (let row = 0; row < rows; row++) {
+                        highlighted.push(row * cols + col);
+                    }
+                }
+            } else {
+                // Выделяем горизонтальные полосы (ряды)
+                const rowsToHighlight = numerator;
+                for (let row = 0; row < rowsToHighlight; row++) {
+                    for (let col = 0; col < cols; col++) {
+                        highlighted.push(row * cols + col);
+                    }
+                }
+            }
+            
+            return highlighted;
+        }
+
+        function createChocolatePieces(chocolateId, rows, cols, highlightedPieces) {
+            const chocolate = document.getElementById(chocolateId);
+            chocolate.innerHTML = '';
+            
+            const pieceWidth = 100 / cols;
+            const pieceHeight = 100 / rows;
+            
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    const piece = document.createElement('div');
+                    piece.className = 'chocolate-piece';
+                    piece.style.left = `${col * pieceWidth}%`;
+                    piece.style.top = `${row * pieceHeight}%`;
+                    piece.style.width = `${pieceWidth}%`;
+                    piece.style.height = `${pieceHeight}%`;
+                    
+                    const pieceIndex = row * cols + col;
+                    if (highlightedPieces.includes(pieceIndex)) {
+                        piece.classList.add('highlighted');
+                    }
+                    
+                    chocolate.appendChild(piece);
+                }
+            }
+        }
+
+        function getStepDescriptions() {
+            if (!fractionData) return {};
+            
+            const { original, common } = fractionData;
+            
+            return {
+                1: `Крок 1: Дві шоколадки однакового розміру поділені на ${original.den1} і ${original.den2} частин відповідно. Підсвічені ${original.num1}/${original.den1} і ${original.num2}/${original.den2}.`,
+                2: `Крок 2: Додаємо поділи до спільного знаменника (${common.den}). Ми це робимо для того, щоб в результаті всі шматочки були однакового розміру на обох шоколадках - тоді буде легко порахувати. Підсвічені області залишаються тими ж за розміром і розташуванням.`,
+                3: `Крок 3: Рахуємо підсвічені шматочки однакового розміру. ${common.num1} + ${common.num2} = ${common.num1 + common.num2} шматочків.`,
+                4: `Крок 4: Отримуємо результат: ${fractionData.result.num}/${fractionData.result.den}`
+            };
+        }
+
+        function animateToStep(step) {
+            if (!fractionData) return;
+            
+            // Отменяем все предыдущие таймеры
+            countingTimeouts.forEach(timeout => clearTimeout(timeout));
+            countingTimeouts = [];
+            
+            const stepInfo = document.getElementById('stepInfo');
+            const result = document.getElementById('result');
+            const fraction1 = document.getElementById('fraction1');
+            const fraction2 = document.getElementById('fraction2');
+            
+            const descriptions = getStepDescriptions();
+            stepInfo.textContent = descriptions[step] || '';
+            
+            // Удаляем числа подсчета
+            document.querySelectorAll('.counting-number').forEach(num => num.remove());
+            
+            const { original, common } = fractionData;
+            
+            // Вычисляем размеры финальной сетки для всех шагов
+            const finalRows1 = common.den / original.den1;
+            const finalCols2 = common.den / original.den2;
+            
+            switch(step) {
+                case 1:
+                    // Исходные дроби
+                    const highlighted1_step1 = getHighlightedPieces(1, original.den1, original.num1, original.den1, true);
+                    const highlighted2_step1 = getHighlightedPieces(original.den2, 1, original.num2, original.den2, false);
+                    
+                    createChocolatePieces('chocolate1', 1, original.den1, highlighted1_step1);
+                    createChocolatePieces('chocolate2', original.den2, 1, highlighted2_step1);
+                    
+                    fraction1.textContent = `${original.num1}/${original.den1}`;
+                    fraction2.textContent = `${original.num2}/${original.den2}`;
+                    result.classList.remove('show');
+                    break;
+                    
+                case 2:
+                    // Анимация к общему знаменателю
+                    // Левая шоколадка: добавляем горизонтальные деления
+                    let currentRows1 = 1;
+                    const step1Interval = setInterval(() => {
+                        currentRows1++;
+                        const highlighted1 = getHighlightedPieces(currentRows1, original.den1, original.num1, original.den1, true);
+                        createChocolatePieces('chocolate1', currentRows1, original.den1, highlighted1);
+                        
+                        const currentNum1 = original.num1 * currentRows1;
+                        const currentDen1 = original.den1 * currentRows1;
+                        fraction1.textContent = `${currentNum1}/${currentDen1}`;
+                        
+                        if (currentRows1 >= finalRows1) {
+                            clearInterval(step1Interval);
+                        }
+                    }, 400);
+                    
+                    // Правая шоколадка: добавляем вертикальные деления
+                    setTimeout(() => {
+                        let currentCols2 = 1;
+                        const step2Interval = setInterval(() => {
+                            currentCols2++;
+                            const highlighted2 = getHighlightedPieces(original.den2, currentCols2, original.num2, original.den2, false);
+                            createChocolatePieces('chocolate2', original.den2, currentCols2, highlighted2);
+                            
+                            const currentNum2 = original.num2 * currentCols2;
+                            const currentDen2 = original.den2 * currentCols2;
+                            fraction2.textContent = `${currentNum2}/${currentDen2}`;
+                            
+                            if (currentCols2 >= finalCols2) {
+                                clearInterval(step2Interval);
+                            }
+                        }, 400);
+                    }, 800);
+                    break;
+                    
+                case 3:
+                    // Финальная разметка для подсчета
+                    const highlighted1_step3 = getHighlightedPieces(finalRows1, original.den1, original.num1, original.den1, true);
+                    const highlighted2_step3 = getHighlightedPieces(original.den2, finalCols2, original.num2, original.den2, false);
+                    
+                    createChocolatePieces('chocolate1', finalRows1, original.den1, highlighted1_step3);
+                    createChocolatePieces('chocolate2', original.den2, finalCols2, highlighted2_step3);
+                    
+                    fraction1.textContent = `${common.num1}/${common.den}`;
+                    fraction2.textContent = `${common.num2}/${common.den}`;
+                    
+                    // Анимация подсчета
+                    setTimeout(() => {
+                        animateCount();
+                    }, 500);
+                    break;
+                    
+                case 4:
+                    // Показ результата
+                    const highlighted1_step4 = getHighlightedPieces(finalRows1, original.den1, original.num1, original.den1, true);
+                    const highlighted2_step4 = getHighlightedPieces(original.den2, finalCols2, original.num2, original.den2, false);
+                    
+                    createChocolatePieces('chocolate1', finalRows1, original.den1, highlighted1_step4);
+                    createChocolatePieces('chocolate2', original.den2, finalCols2, highlighted2_step4);
+                    
+                    fraction1.textContent = `${common.num1}/${common.den}`;
+                    fraction2.textContent = `${common.num2}/${common.den}`;
+                    result.classList.add('show');
+                    break;
+            }
+        }
+
+        function animateCount() {
+            const chocolate1 = document.getElementById('chocolate1');
+            const chocolate2 = document.getElementById('chocolate2');
+            
+            const pieces1 = chocolate1.querySelectorAll('.chocolate-piece.highlighted');
+            const pieces2 = chocolate2.querySelectorAll('.chocolate-piece.highlighted');
+            
+            let count = 0;
+            
+            // Считаем первую шоколадку
+            pieces1.forEach((piece, index) => {
+                const timeout = setTimeout(() => {
+                    count++;
+                    addCountingNumber(piece, count);
+                }, index * 400);
+                countingTimeouts.push(timeout);
+            });
+            
+            // Считаем вторую шоколадку
+            pieces2.forEach((piece, index) => {
+                const timeout = setTimeout(() => {
+                    count++;
+                    addCountingNumber(piece, count);
+                }, (pieces1.length + index) * 400);
+                countingTimeouts.push(timeout);
+            });
+        }
+
+        function addCountingNumber(piece, number) {
+            // Проверяем, что элемент все еще существует в DOM
+            if (!piece || !piece.parentElement || !document.contains(piece)) {
+                return;
+            }
+            
+            const numberElement = document.createElement('div');
+            numberElement.className = 'counting-number';
+            numberElement.textContent = number;
+            
+            try {
+                const rect = piece.getBoundingClientRect();
+                const containerRect = piece.parentElement.getBoundingClientRect();
+                
+                // Улучшенное центрирование
+                const centerX = rect.left - containerRect.left + (rect.width / 2) - 10;
+                const centerY = rect.top - containerRect.top + (rect.height / 2) - 10;
+                
+                numberElement.style.left = `${centerX}px`;
+                numberElement.style.top = `${centerY}px`;
+                
+                piece.parentElement.appendChild(numberElement);
+            } catch (error) {
+                // Если произошла ошибка с позиционированием, просто не добавляем число
+                console.warn('Не вдалося додати число підрахунку:', error);
+            }
+        }
+
+        function nextStep() {
+            if (currentStep < maxSteps && fractionData) {
+                currentStep++;
+                animateToStep(currentStep);
+                updateButtons();
+            }
+        }
+
+        function previousStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                animateToStep(currentStep);
+                updateButtons();
+            }
+        }
+
+        function resetAnimation() {
+            // Отменяем все таймеры
+            countingTimeouts.forEach(timeout => clearTimeout(timeout));
+            countingTimeouts = [];
+            
+            if (fractionData) {
+                currentStep = 1;
+                animateToStep(currentStep);
+            } else {
+                currentStep = 0;
+            }
+            updateButtons();
+        }
+
+        function updateButtons() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            if (!fractionData) {
+                prevBtn.disabled = true;
+                nextBtn.disabled = true;
+                return;
+            }
+            
+            prevBtn.disabled = currentStep <= 1;
+            nextBtn.disabled = currentStep >= maxSteps;
+        }
+
+        // Инициализация
+        updateFractions();
+    </script>
+</body>
+</html>
